@@ -13,8 +13,7 @@ contract Auction{
         require(_auctionOwner!=0 );
         auctionOwner = _auctionOwner;
         incrementBid = _incrementBid;
-        highestBid = minBid;
-        highestBindingBid = 10;
+        highestBindingBid = incrementBid;
         highestBidder = auctionOwner;
     }
     
@@ -23,13 +22,37 @@ contract Auction{
         require(msg.sender!=auctionOwner);
         require(msg.value != 0);
         uint newBid = fundOfBidder[msg.sender]+msg.value;
-        if(newBid<highestBid){
+        if(newBid<highestBindingBid){
             revert();
         }
-        if(msg.sender == highestBidder){
-            highestBid = newBid;
+        highestBid = fundOfBidder[highestBidder];
+        fundOfBidder[msg.sender] = newBid;
+        if(newBid <= highestBid){
+            if(newBid+incrementBid>highestBid){
+                highestBindingBid = highestBid;
+            }
+            else{
+                highestBindingBid = newBid+incrementBid;
+            }
         }
+        else{
+            if(msg.sender == highestBidder){
+                highestBid = newBid;
+            }
+            else{
+                highestBidder = msg.sender;
+            if(newBid+incrementBid>highestBid){
+                highestBindingBid = highestBid;
+            }
+            else{
+                highestBindingBid = newBid+incrementBid;
+            }
+            highestBid = newBid;
+            }
+        }
+        return true;
     }
+    
     /*allows owner to withdraw fund from the contract after
     the aucton is finished*/
     function withdrawFund() public returns (bool success){
