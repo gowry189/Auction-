@@ -7,6 +7,8 @@ contract Auction{
     uint highestBindingBid;
     mapping(address=>uint256) fundOfBidder;
     
+    event LogPlaceBid(uint highestBid, address highestBidder, uint highestBindingBid);
+    
     /*constructor to initialize the owner and the bid increment 
     value if the address of the auction owner is filled, i.e not 0*/
     function Auction(address _auctionOwner, uint _incrementBid ,uint minBid){
@@ -50,6 +52,7 @@ contract Auction{
             highestBid = newBid;
             }
         }
+        LogPlaceBid(highestBid, highestBidder, highestBindingBid);
         return true;
     }
     
