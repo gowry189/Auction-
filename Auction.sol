@@ -11,16 +11,10 @@ contract Auction{
     
     /*constructor to initialize the owner and the bid increment 
     value if the address of the auction owner is filled, i.e not 0*/
-    function Auction(address _auctionOwner, uint _incrementBid ,uint minBid){
-        require(_auctionOwner!=0 );
-        auctionOwner = _auctionOwner;
-        incrementBid = _incrementBid;
-        highestBindingBid = incrementBid;
-        highestBidder = auctionOwner;
-    }
+    
     
     //allows user to place bids
-    function placeBid() public returns (bool success){
+    function placeBid() public payable returns (bool success){
         require(msg.sender!=auctionOwner);
         require(msg.value != 0);
         uint newBid = fundOfBidder[msg.sender]+msg.value;
@@ -52,14 +46,45 @@ contract Auction{
             highestBid = newBid;
             }
         }
-        LogPlaceBid(highestBid, highestBidder, highestBindingBid);
+       
         return true;
     }
     
-    /*allows owner to withdraw fund from the contract after
-    the aucton is finished*/
-    function withdrawFund() public returns (bool success){
+    
+    function withdrawFund() public payable returns (bool success){
+        address withdrawFrom;
+        uint withdrawalAmount;
+        bool flag;
         
+        /*allows the owner of the auction to withdraw the funds in the contract
+        from the highest bidder*/
+        if(msg.sender == auctionOwner){
+            withdrawFrom= highestBidder;
+            withdrawalAmount = highestBindingBid;
+            flag = true;
+        }
+        
+        
+        /*allows the auction winner(highest bidder) to withdraw the exxess amount
+        from the contract*/
+        else if(msg.sender == highestBidder){
+            withdrawFrom = msg.sender;
+            if(flag){
+                withdrawalAmount = fundOfBidder[highestBidder];
+            }
+            else{
+                withdrawalAmount = fundOfBidder[highestBidder]-highestBindingBid;
+            }
+        }
+        
+        else{
+            withdrawFrom = msg.sender;
+            withdrawalAmount = fundOfBidder[msg.sender];
+        }
+        require(withdrawalAmount != 0);
+        fundOfBidder[withdrawFrom] = -withdrawalAmount;
+        require(msg.sender.send(withdrawalAmount));
+        return true;
     }
     /*allows owner to cancel the auction in any case of emergency*/
     function cancelAuction() public returns (bool success){
