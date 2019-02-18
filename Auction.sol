@@ -9,10 +9,7 @@ contract Auction{
     
     event LogPlaceBid(uint highestBid, address highestBidder, uint highestBindingBid);
     
-    /*constructor to initialize the owner and the bid increment 
-    value if the address of the auction owner is filled, i.e not 0*/
-    
-    
+
     //allows user to place bids
     function placeBid() public payable returns (bool success){
         require(msg.sender!=auctionOwner);
